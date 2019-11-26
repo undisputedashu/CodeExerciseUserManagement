@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,12 +13,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+import com.crud.user.controller.PasswordConstants;
 import com.crud.user.entity.Role;
 import com.crud.user.entity.User;
 import com.crud.user.repository.RoleRepository;
 import com.crud.user.repository.UserRepository;
 
+@Service
 public class UserDetailService implements UserDetailsService {
 
 	@Autowired
@@ -30,15 +31,6 @@ public class UserDetailService implements UserDetailsService {
 	@Autowired
 	private PasswordEncoder bCryptPasswordEncoder;
 
-	@PostConstruct
-	public void init() {
-		User user = new User();
-		user.setEmail("ashutosh@gmail.com");
-		user.setFullname("admin");
-		user.setPassword("p@55word");
-		saveUser(user, "ROLE_ADMIN");
-	}
-	
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		User user = userRepository.findByEmail(email);
@@ -73,10 +65,15 @@ public class UserDetailService implements UserDetailsService {
 	}
 	
 	private void saveUser(User user, String role) {
-	    user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-	    user.setEnabled(true);
-	    Role userRole = roleRepository.findByRole(role);
-	    user.setRoles(new HashSet<>(Arrays.asList(userRole)));
+		User existingUser = userRepository.findByEmail(user.getEmail());
+		if (existingUser != null) {
+			user.setPassword(existingUser.getPassword());
+		} else {
+			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		    Role userRole = roleRepository.findByRole(role);
+		    user.setRoles(new HashSet<>(Arrays.asList(userRole)));
+		}
+	    
 	    userRepository.save(user);
 	}
 
@@ -86,6 +83,16 @@ public class UserDetailService implements UserDetailsService {
 
 	public void deleteProduct(String id) {
 		userRepository.deleteById(id);
+	}
+
+	public String changePassword(User user, String currentPassword, String newPassword) {
+		String password = bCryptPasswordEncoder.encode(currentPassword);
+		if (!password.equals(user.getPassword())) {
+			return PasswordConstants.INVALIDPASSWORD;
+		}
+		user.setPassword(bCryptPasswordEncoder.encode(newPassword));
+		userRepository.save(user);
+		return PasswordConstants.SUCCESSFUL;
 	}
 
 }
