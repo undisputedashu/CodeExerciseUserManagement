@@ -37,7 +37,7 @@ public class UserDetailServiceTest {
 	public void init() {
 		MockitoAnnotations.initMocks(this);
 		 Mockito.when(bCryptPasswordEncoder.encode("abcd123")).thenReturn("abcd123");
-		 Mockito.when(bCryptPasswordEncoder.encode("hjkhkd")).thenReturn("abcd123");
+		 Mockito.when(bCryptPasswordEncoder.encode("hjkhkd")).thenReturn("hjkhkd");
 	}
 	
 	@Test
