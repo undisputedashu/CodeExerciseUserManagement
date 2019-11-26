@@ -20,6 +20,8 @@ import com.crud.user.entity.Role;
 import com.crud.user.entity.User;
 import com.crud.user.repository.RoleRepository;
 import com.crud.user.repository.UserRepository;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 @Service
 public class UserDetailService implements UserDetailsService {
@@ -57,10 +59,12 @@ public class UserDetailService implements UserDetailsService {
 	}
 
 	public User findUserByEmail(String email) {
+		Preconditions.checkArgument(!Strings.isNullOrEmpty(email), "Email id cannot be null or empty.");
 		return userRepository.findByEmail(email);
 	}
 
 	public void saveUser(User user) {
+		Preconditions.checkNotNull(user, "User cannot be null.");
 		saveUser(user, "USER");
 	}
 
@@ -82,6 +86,7 @@ public class UserDetailService implements UserDetailsService {
 	}
 
 	public void deleteUser(String emailId) {
+		Preconditions.checkArgument(!Strings.isNullOrEmpty(emailId), "Email id cannot be null or empty.");
 		User user = userRepository.findByEmail(emailId);
 		userRepository.deleteById(user.getId());
 	}
