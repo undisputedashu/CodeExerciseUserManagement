@@ -85,7 +85,7 @@ public class UserDetailServiceTest {
 		User user = new User();
 		user.setPassword("hjkhkd");
 		
-		String result = userDetailService.changePassword(user, "hjkhkd", "fdeb22");
+		String result = userDetailService.changePassword(user, "abcd123", "fdeb22");
 		Assert.assertTrue(PasswordConstants.INVALIDPASSWORD.equals(result));
 	}
 
