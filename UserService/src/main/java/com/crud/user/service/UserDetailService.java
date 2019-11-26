@@ -34,55 +34,56 @@ public class UserDetailService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		User user = userRepository.findByEmail(email);
-	    if(user != null) {
-	        List<GrantedAuthority> authorities = getUserAuthority(user.getRoles());
-	        return buildUserForAuthentication(user, authorities);
-	    } else {
-	        throw new UsernameNotFoundException("username not found");
-	    }
+		if (user != null) {
+			List<GrantedAuthority> authorities = getUserAuthority(user.getRoles());
+			return buildUserForAuthentication(user, authorities);
+		} else {
+			throw new UsernameNotFoundException("username not found");
+		}
 	}
 
 	private List<GrantedAuthority> getUserAuthority(Set<Role> userRoles) {
-	    Set<GrantedAuthority> roles = new HashSet<>();
-	    userRoles.forEach((role) -> {
-	        roles.add(new SimpleGrantedAuthority(role.getRole()));
-	    });
+		Set<GrantedAuthority> roles = new HashSet<>();
+		userRoles.forEach((role) -> {
+			roles.add(new SimpleGrantedAuthority(role.getRole()));
+		});
 
-	    List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles);
-	    return grantedAuthorities;
+		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles);
+		return grantedAuthorities;
 	}
 
 	private UserDetails buildUserForAuthentication(User user, List<GrantedAuthority> authorities) {
-	    return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
 	}
-	
+
 	public User findUserByEmail(String email) {
-	    return userRepository.findByEmail(email);
+		return userRepository.findByEmail(email);
 	}
-	
+
 	public void saveUser(User user) {
 		saveUser(user, "USER");
 	}
-	
+
 	private void saveUser(User user, String role) {
 		User existingUser = userRepository.findByEmail(user.getEmail());
 		if (existingUser != null) {
 			user.setPassword(existingUser.getPassword());
 		} else {
 			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-		    Role userRole = roleRepository.findByRole(role);
-		    user.setRoles(new HashSet<>(Arrays.asList(userRole)));
+			Role userRole = roleRepository.findByRole(role);
+			user.setRoles(new HashSet<>(Arrays.asList(userRole)));
 		}
-	    
-	    userRepository.save(user);
+
+		userRepository.save(user);
 	}
 
 	public List<User> findAll() {
 		return userRepository.findAll();
 	}
 
-	public void deleteProduct(String id) {
-		userRepository.deleteById(id);
+	public void deleteUser(String emailId) {
+		User user = userRepository.findByEmail(emailId);
+		userRepository.deleteById(user.getId());
 	}
 
 	public String changePassword(User user, String currentPassword, String newPassword) {
