@@ -16,14 +16,15 @@ import com.crud.user.entity.User;
 import com.crud.user.service.UserDetailService;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
 	@Autowired
 	private UserDetailService userDetailsService;
 
 	@PostMapping
-	public ResponseEntity<?> addorUpdateUser(@RequestBody User user) {
+	@RequestMapping("addUser")
+	public ResponseEntity<?> addUser(@RequestBody User user) {
 		try {
 			userDetailsService.saveUser(user);
 			StringBuilder sb = new StringBuilder();
@@ -31,6 +32,21 @@ public class UserController {
 			return new ResponseEntity(sb, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity("Unable to add user!", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	//Various use cases while updating user, partial update or full update
+	//Update with null values for some fields
+	@PutMapping
+	@RequestMapping("updateUser")
+	public ResponseEntity<?> updateUser(@RequestBody User user) {
+		try {
+			userDetailsService.updateUser(user);
+			StringBuilder sb = new StringBuilder();
+			sb.append(user.getFirstName()).append(" ").append(user.getLastName());
+			return new ResponseEntity(sb, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity("Unable to update user!", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -48,7 +64,9 @@ public class UserController {
 		}
 	}
 
+	//Need to work on encoder mechanism
 	@PutMapping
+	@RequestMapping("changePassword")
 	public ResponseEntity<?> changePassword(@RequestParam("emailId") String emailId,
 			@RequestParam("currentPassword") String currentPassword, @RequestParam("newPassword") String newPassword) {
 		try {
@@ -64,6 +82,7 @@ public class UserController {
 	}
 
 	@DeleteMapping
+	@RequestMapping("deleteUser")
 	public ResponseEntity<?> deleteUser(@RequestParam("emailId") String emailId) {
 		try {
 			userDetailsService.deleteUser(emailId);

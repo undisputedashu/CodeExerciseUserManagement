@@ -21,19 +21,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		http.authorizeRequests()
+        .antMatchers("/users/addUser").permitAll()
+        .anyRequest().authenticated()
+        .and()
+        .httpBasic();
 		
-		http.csrf()
-			.disable()
-			.authorizeRequests()
-			.anyRequest()
-			.authenticated()
-			.and()
-			.httpBasic();
+		http.csrf().disable();
 	}
 
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-	    web.ignoring().antMatchers("/user");
+	    web.ignoring().antMatchers("/users/addUser");
 	}
 	
 	@Bean

@@ -26,6 +26,7 @@ import com.google.common.base.Strings;
 @Service
 public class UserDetailService implements UserDetailsService {
 
+	private static final String USER_ROLE = "USER";
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -65,19 +66,13 @@ public class UserDetailService implements UserDetailsService {
 
 	public void saveUser(User user) {
 		Preconditions.checkNotNull(user, "User cannot be null.");
-		saveUser(user, "USER");
+		saveUser(user, USER_ROLE);
 	}
 
 	private void saveUser(User user, String role) {
-		User existingUser = userRepository.findByEmail(user.getEmail());
-		if (existingUser != null) {
-			user.setPassword(existingUser.getPassword());
-		} else {
-			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-			Role userRole = roleRepository.findByRole(role);
-			user.setRoles(new HashSet<>(Arrays.asList(userRole)));
-		}
-
+		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		Role userRole = roleRepository.findByRole(role);
+		user.setRoles(new HashSet<>(Arrays.asList(userRole)));
 		userRepository.save(user);
 	}
 
@@ -99,6 +94,15 @@ public class UserDetailService implements UserDetailsService {
 		user.setPassword(bCryptPasswordEncoder.encode(newPassword));
 		userRepository.save(user);
 		return PasswordConstants.SUCCESSFUL;
+	}
+
+	public void updateUser(User user) {
+		User existingUser = userRepository.findByEmail(user.getEmail());
+		if (existingUser == null) {
+			throw new RuntimeException("Unable to find user!");
+		} 
+		user.setPassword(existingUser.getPassword());
+		userRepository.save(user);
 	}
 
 }
